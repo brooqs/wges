@@ -33,9 +33,3 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload Binary
-        uses: softprops/action-gh-release@v1
-        with:
-          files: ./wges
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
