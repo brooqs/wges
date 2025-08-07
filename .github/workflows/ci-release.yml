@@ -1,64 +1,41 @@
-name: CI and Release
+name: Build and Release (Linux Only)
 
 on:
   push:
-    branches:
-      - main
     tags:
       - 'v*'
 
 jobs:
   build:
+    name: Build and Release Linux Binary
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.24.5'
-      - name: Build
-        run: go build -v -o wges
 
-  test:
-    needs: build
-    runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: '1.24.5'
-      - name: Test
-        run: go test ./...
 
-  release:
-    if: startsWith(github.ref, 'refs/tags/')
-    needs: [build, test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: '1.24.5'
-      - name: Build binary
-        run: go build -o wges
+
+      - name: Build Binary for Linux
+        run: GOOS=linux GOARCH=amd64 go build -o wges
+
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: softprops/action-gh-release@v1
         with:
+          name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
-          body: Automated release for ${{ github.ref_name }}
-          draft: false
-          prerelease: false
-      - name: Upload release asset
-        uses: actions/upload-release-asset@v1
+          body: |
+            Automated release for ${{ github.ref_name }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Binary
+        uses: softprops/action-gh-release@v1
         with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./wges
-          asset_name: wges-${{ github.ref_name }}-linux-amd64
-          asset_content_type: application/octet-stream
+          files: ./wges
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
