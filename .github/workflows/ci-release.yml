@@ -19,17 +19,20 @@ jobs:
         with:
           go-version: '1.24.5'
 
-      - name: Build Binary for Linux
-        run: GOOS=linux GOARCH=amd64 go build -o wges
+      - name: Build Binary
+        run: |
+          mkdir -p dist
+          GOOS=linux GOARCH=amd64 go build -o dist/wges
+          ls -lh dist/
+          file dist/wges
 
-      - name: Create GitHub Release
-        id: create_release
+      - name: Upload Release
         uses: softprops/action-gh-release@v1
         with:
           name: Release ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
           body: |
             Automated release for ${{ github.ref_name }}
+          files: dist/wges
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
